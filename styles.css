@@ -1,0 +1,317 @@
+:root {
+  --tlo: #f4f5f7;
+  --karta: #ffffff;
+  --tekst: #14161a;
+  --tekst-2: #5b616b;
+  --linia: #e3e5e9;
+  --tor: #e9ebef;
+  --sila: #e8590c;
+  --wytrz: #0b8f87;
+  --akcent: #14161a;
+  --ok: #2b8a3e;
+  --blad: #c92a2a;
+  --cien: 0 1px 2px rgba(0,0,0,.06);
+  --cien-wysoki: 0 8px 24px rgba(0,0,0,.18);
+  --wyjscie: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Obrys toru i pól: min. 3:1 do tła karty w obu motywach (sam --tor ma 1,19:1). */
+  --obrys: color-mix(in srgb, var(--tekst-2) 70%, var(--karta));
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tlo: #0f1115;
+    --karta: #181b21;
+    --tekst: #eef0f3;
+    --tekst-2: #9aa1ac;
+    --linia: #262a32;
+    --tor: #23272f;
+    --sila: #ff7a33;
+    --wytrz: #21c2b6;
+    --akcent: #eef0f3;
+    --ok: #51cf66;
+    --blad: #ff8787;
+    --cien: none;
+    --cien-wysoki: 0 8px 24px rgba(0,0,0,.5);
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--tlo);
+  color: var(--tekst);
+  font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-tap-highlight-color: transparent;
+}
+::selection { background: color-mix(in srgb, var(--wytrz) 30%, transparent); }
+:focus-visible { outline: 2px solid var(--wytrz); outline-offset: 2px; }
+main {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 96px);
+}
+h1 { font-size: 22px; margin: 4px 0 12px; letter-spacing: -.01em; }
+h2, h3 { margin: 0; }
+h2.sekcja { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--tekst-2); margin: 24px 0 8px; }
+.naglowek-karty, .sciezka-naglowek h3 { font-size: 15px; font-weight: 600; }
+p { margin: 0; }
+.drobny { font-size: 13px; color: var(--tekst-2); }
+.podtytul { margin-bottom: 12px; }
+.tylko-czytnik { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.kolor-sila { color: var(--sila); }
+.kolor-wytrz { color: var(--wytrz); }
+
+.karta {
+  background: var(--karta);
+  border: 1px solid var(--linia);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: var(--cien);
+}
+.karta + .karta { margin-top: 10px; }
+
+/* Paski i liczby */
+.pasek-naglowek { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.procent { font-size: 15px; font-weight: 600; }
+.wiersz-liczby { margin-bottom: 8px; }
+.liczba-duza { font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
+/* Obrys w cieniu wewnętrznym: wypełnienie go przykrywa, więc widać go tylko na pustej części. */
+.tor { height: 12px; background: var(--tor); border-radius: 6px; overflow: hidden; display: flex; box-shadow: inset 0 0 0 1px var(--obrys); }
+.tor > span { display: block; height: 100%; transition: width .7s var(--wyjscie); }
+.wypelnienie { background: var(--akcent); }
+
+/* Pasek celu: 10 etapów. Zamknięte zostają pełne, bieżący jest szeroki. */
+.tor-etapy { --maly: 4%; display: flex; gap: 3px; height: 12px; }
+.etap-seg { flex: 0 0 var(--maly); border-radius: 4px; overflow: hidden; background: var(--tor); box-shadow: inset 0 0 0 1px var(--obrys); }
+.etap-seg.zamkniety { background: var(--akcent); box-shadow: none; }
+.etap-seg.biezacy { flex: 1 1 0; }
+.etap-seg.biezacy > .wypelnienie { display: block; height: 100%; transition: width .7s var(--wyjscie); }
+.tor-etapy.pelny .etap-seg { flex: 1 1 0; }
+/* Zamknięcie etapu: pełny segment chwilę stoi szeroki, potem oddaje miejsce następnemu. */
+.etap-seg.zwija-sie { animation: zwija-sie 1.1s var(--wyjscie) .45s both; }
+.etap-seg.rozwija-sie { animation: rozwija-sie 1.1s var(--wyjscie) .45s both; }
+@keyframes zwija-sie { from { flex-grow: 1; } to { flex-grow: 0; } }
+@keyframes rozwija-sie { from { flex-grow: 0; } to { flex-grow: 1; } }
+.notka { margin-top: 10px; font-size: 14px; }
+/* Sam --ok na białym ma 4,37:1, za mało na tekst 14 px. */
+.notka-ok { color: color-mix(in srgb, var(--ok) 80%, var(--tekst)); font-weight: 600; }
+#wykres-tygodni .pusty-wykres { padding: 2px 0; }
+.seg-sila { background: var(--sila); }
+.seg-wytrz { background: var(--wytrz); }
+.legenda { display: flex; gap: 14px; margin-top: 8px; font-size: 13px; color: var(--tekst-2); }
+.legenda i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: 1px; }
+.kropka-sila { background: var(--sila); }
+.kropka-wytrz { background: var(--wytrz); }
+.indeksy + .tor, .karta > .tor + .drobny { margin-top: 10px; }
+.karta > .drobny:last-child { margin-top: 8px; }
+
+/* Wykresy */
+.wykres svg { display: block; width: 100%; height: auto; overflow: visible; }
+.wykres text { font-size: 11px; fill: var(--tekst-2); font-family: inherit; }
+.wykres-cel { margin-top: 14px; }
+.pusty-wykres { padding: 18px 0 6px; }
+.nad-wykresem { margin-bottom: 8px; }
+.os { stroke: var(--linia); stroke-width: 1; }
+.linia-etapu { stroke: var(--tekst-2); stroke-width: 1; stroke-dasharray: 3 3; opacity: .6; }
+.linia-wykresu { fill: none; stroke: var(--akcent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.pole-wykresu { fill: var(--akcent); opacity: .08; }
+.punkt-dzis { fill: var(--akcent); }
+.linia-puli { stroke: var(--tekst); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* Moment: zamknięty etap albo zrobiona pula */
+/* Obrys rośnie najwyżej o 4 px, a wiersz statusu ma 8 px odstępu: obrys nie nachodzi na "Tryb demo". */
+.swieto { animation: swieto 1.6s var(--wyjscie); }
+@keyframes swieto {
+  0% { outline: 2px solid var(--ok); outline-offset: 0; }
+  55% { outline: 2px solid var(--ok); outline-offset: 3px; }
+  100% { outline: 2px solid transparent; outline-offset: 4px; }
+}
+
+/* Kafelki */
+/* Kafelki muszą się zmieścić nad paskiem zakładek także z marginesami iPhone'a (pasek stanu i gest u dołu),
+   dlatego przycisk opcji stoi w wierszu punktów, a nie pod nimi. */
+.kafelki { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.kafelek {
+  position: relative;
+  background: var(--karta);
+  border: 1px solid var(--linia);
+  border-radius: 14px;
+  box-shadow: var(--cien);
+  display: flex;
+  flex-direction: column;
+}
+.kafelek::before { content: ""; position: absolute; left: 12px; top: 0; width: 28px; height: 3px; border-radius: 0 0 3px 3px; }
+.kafelek-sila::before { background: var(--sila); }
+.kafelek-wytrz::before { background: var(--wytrz); }
+.kafelek-obie::before { background: linear-gradient(90deg, var(--sila) 50%, var(--wytrz) 50%); }
+.kafelek-zapis {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 11px 12px 6px;
+  cursor: pointer;
+  border-radius: 14px;
+}
+.kafelek-zapis:active { background: var(--tor); }
+.kafelek-nazwa { display: block; font-weight: 600; font-size: 16px; }
+.kafelek-opis { display: block; font-size: 13px; color: var(--tekst-2); }
+.kafelek-punkty { display: block; height: 44px; line-height: 44px; margin-top: 2px; font-size: 20px; font-weight: 700; }
+.kafelek-punkty small { font-size: 12px; font-weight: 500; color: var(--tekst-2); }
+.kafelek-opcja {
+  position: absolute; right: 6px; bottom: 6px;
+  min-height: 44px;
+  border: 1px solid var(--obrys);
+  background: none;
+  color: var(--tekst);
+  font: inherit;
+  font-size: 14px;
+  border-radius: 10px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+.kafelek-opcja[aria-pressed="true"] { background: var(--akcent); color: var(--karta); border-color: var(--akcent); }
+
+/* Drzewko */
+.indeksy { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.indeks-nazwa { font-size: 13px; color: var(--tekst-2); }
+.sciezka-naglowek { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.progi { display: flex; align-items: center; margin: 12px 0 4px; }
+.prog { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; min-width: 34px; }
+.prog-kropka { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--tekst-2); background: var(--karta); }
+.prog.zdobyty .prog-kropka { background: var(--sila); border-color: var(--sila); }
+.prog.nastepny .prog-kropka { border-color: var(--sila); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sila) 25%, transparent); }
+.prog-wartosc { font-size: 12px; color: var(--tekst-2); }
+.prog.zdobyty .prog-wartosc { color: var(--tekst); font-weight: 600; }
+.lacznik { flex: 1; height: 2px; background: var(--tor); margin-bottom: 18px; }
+.lacznik.zdobyty { background: var(--sila); }
+
+/* Formularz i przyciski */
+/* Każde pole to trzy wiersze siatki rodzica (etykieta, pole, błąd), więc pola w jednym rzędzie
+   stoją na tej samej wysokości, nawet gdy "· ostatnio 20" zawija etykietę obok. */
+.pola { display: grid; grid-template-columns: 1fr 1fr; column-gap: 10px; row-gap: 4px; }
+label.pole { display: grid; grid-row: span 3; grid-template-rows: subgrid; font-size: 13px; color: var(--tekst-2); }
+label.pole > span:first-child { align-self: end; }
+label.pole input {
+  font: inherit; font-size: 18px; color: var(--tekst);
+  background: var(--tlo); border: 1px solid var(--obrys); border-radius: 10px; padding: 10px; width: 100%;
+}
+label.pole input[aria-invalid="true"] { border: 2px solid var(--blad); padding: 9px; }
+.pole-blad { margin-bottom: 8px; color: var(--blad); font-weight: 600; }
+label.pole .ostatnio { color: var(--tekst); font-weight: 600; }
+.link { border: 0; background: none; padding: 0; min-height: 44px; font: inherit; font-weight: 600; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.przycisk {
+  display: block; width: 100%; min-height: 48px; margin-top: 14px; padding: 12px;
+  border: 0; border-radius: 12px; background: var(--akcent); color: var(--karta);
+  font: inherit; font-weight: 600; cursor: pointer;
+}
+.przycisk-drugi { background: none; color: var(--tekst); border: 1px solid var(--linia); margin-top: 8px; }
+.przycisk-maly {
+  flex: none; min-height: 44px; min-width: 88px;
+  border: 1px solid var(--linia); background: none; color: var(--tekst);
+  font: inherit; font-size: 14px; border-radius: 10px; padding: 0 12px; cursor: pointer;
+}
+/* Jedzenie: formularz, szybkie powtórki, poprawka w dzienniku */
+.formularz-posilku { margin-top: 10px; }
+.pola-posilek { grid-template-columns: 1fr 88px; }
+.formularz-posilku .przycisk { margin-top: 10px; }
+.szybkie { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.szybki {
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  min-height: 56px; padding: 8px 10px; text-align: left;
+  border: 1px solid var(--linia); border-radius: 12px; background: var(--karta); box-shadow: var(--cien);
+  color: inherit; font: inherit; cursor: pointer;
+}
+.szybki:active { background: var(--tor); }
+.szybki-opis { font-size: 14px; font-weight: 600; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.szybki-kcal { font-size: 13px; color: var(--tekst-2); }
+.zalozenia { display: inline-block; margin-top: 2px; }
+.wpis.popraw { display: block; }
+.popraw-wiersz { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.pole-kcal input {
+  width: 96px; font: inherit; font-size: 18px; color: var(--tekst);
+  background: var(--tlo); border: 1px solid var(--obrys); border-radius: 10px; padding: 10px;
+}
+.pole-kcal input[aria-invalid="true"] { border: 2px solid var(--blad); padding: 9px; }
+.popraw .pole-blad:empty { display: none; }
+.popraw .pole-blad { display: block; margin: 6px 0 0; }
+.przycisk-maly.glowny { background: var(--akcent); color: var(--karta); border-color: var(--akcent); font-weight: 600; }
+
+.komunikat { margin-top: 12px; padding: 12px; border-radius: 10px; background: color-mix(in srgb, var(--ok) 15%, transparent); }
+.komunikat.blad { background: color-mix(in srgb, var(--sila) 15%, transparent); }
+.komunikat[hidden] { display: none; }
+
+/* Historia i listy */
+.dzien { margin-top: 16px; }
+.wpis { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--linia); }
+.wpis:first-child { border-top: 0; }
+.wpis.cofniety .wpis-opis { text-decoration: line-through; opacity: .55; }
+
+/* Panel zestawu od dołu */
+.arkusz {
+  border: 0; padding: 0;
+  margin: auto auto 0;
+  width: 100%; max-width: 520px;
+  border-radius: 18px 18px 0 0;
+  background: var(--karta); color: var(--tekst);
+  box-shadow: var(--cien-wysoki);
+}
+.arkusz::backdrop { background: rgba(0,0,0,.45); }
+.arkusz[open] { animation: wysun .32s var(--wyjscie); }
+@keyframes wysun { from { transform: translateY(100%); } to { transform: none; } }
+.arkusz-wnetrze { padding: 22px 16px calc(env(safe-area-inset-bottom) + 16px); }
+.arkusz h2 { font-size: 20px; letter-spacing: -.01em; margin-bottom: 8px; }
+.lista-zestawu { list-style: none; margin: 0 0 10px; padding: 0; font-size: 18px; }
+.lista-zestawu li { padding: 8px 0; border-top: 1px solid var(--linia); }
+.lista-zestawu li:first-child { border-top: 0; }
+
+/* Nawigacja i komunikat */
+.zakladki {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  background: color-mix(in srgb, var(--karta) 92%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--linia);
+  padding: 0 max(0px, calc((100% - 520px) / 2)) env(safe-area-inset-bottom);
+}
+.zakladki button { border: 0; background: none; color: var(--tekst-2); font: inherit; font-size: 13px; min-height: 50px; cursor: pointer; }
+.zakladki button.aktywna { color: var(--tekst); font-weight: 600; }
+.toast {
+  position: fixed; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom) + 62px);
+  max-width: 488px; margin: 0 auto;
+  background: var(--akcent); color: var(--karta);
+  padding: 12px 12px 10px 14px; border-radius: 14px;
+  box-shadow: var(--cien-wysoki);
+  animation: wejscie .22s var(--wyjscie);
+}
+.toast[hidden] { display: none; }
+@keyframes wejscie { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.toast-tytul { font-weight: 600; font-size: 15px; }
+.toast-opis { font-size: 13px; opacity: .82; margin-top: 2px; }
+.toast-opis[hidden] { display: none; }
+.toast-akcje { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.toast-akcje:empty { display: none; }
+.toast-akcje button {
+  flex: 1 1 auto; white-space: nowrap; min-height: 44px; padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--karta) 35%, transparent); border-radius: 10px;
+  background: none; color: inherit; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.toast-akcje button.glowna { background: var(--karta); color: var(--tekst); border-color: var(--karta); }
+/* Cofnięcie całego wpisu: bez ramki i na końcu, żeby nie było najgłośniejszym przyciskiem po sukcesie. */
+.toast-akcje button.cicha { flex: 0 0 auto; border-color: transparent; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.toast-swieto { background: var(--ok); }
+.status { font-size: 12px; color: var(--tekst-2); text-align: right; min-height: 16px; margin-bottom: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tor > span, .etap-seg.biezacy > .wypelnienie { transition: none; }
+  .etap-seg.zwija-sie, .etap-seg.rozwija-sie { animation: none; }
+  .arkusz[open], .toast { animation: none; }
+  .swieto { animation: swieto-spokojne 1.6s linear; }
+  @keyframes swieto-spokojne { 0%, 60% { outline: 2px solid var(--ok); outline-offset: 3px; } 100% { outline: 2px solid transparent; outline-offset: 3px; } }
+}
