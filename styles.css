@@ -43,6 +43,7 @@ body {
   font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   font-variant-numeric: tabular-nums;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: clip; /* ekran wjeżdżający z boku nie robi poziomego przewijania */
 }
 ::selection { background: color-mix(in srgb, var(--wytrz) 30%, transparent); }
 :focus-visible { outline: 2px solid var(--wytrz); outline-offset: 2px; }
@@ -307,6 +308,12 @@ label.pole .ostatnio { color: var(--tekst); font-weight: 600; }
 .toast-akcje button.cicha { flex: 0 0 auto; border-color: transparent; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
 .toast-swieto { background: var(--ok); }
 .status { font-size: 12px; color: var(--tekst-2); text-align: right; min-height: 16px; margin-bottom: 8px; }
+
+/* Ekran po przesunięciu palcem wjeżdża z kierunku gestu */
+.wjazd-z-prawej { animation: wjazd-z-prawej .26s var(--wyjscie); }
+.wjazd-z-lewej { animation: wjazd-z-lewej .26s var(--wyjscie); }
+@keyframes wjazd-z-prawej { from { transform: translateX(28px); opacity: .3; } to { transform: none; opacity: 1; } }
+@keyframes wjazd-z-lewej { from { transform: translateX(-28px); opacity: .3; } to { transform: none; opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
   .tor > span, .etap-seg.biezacy > .wypelnienie { transition: none; }

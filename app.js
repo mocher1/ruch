@@ -1293,6 +1293,47 @@ function przeniesPosilek(id, dni) {
   });
 }
 
+/* ---------- Przechodzenie między ekranami: zakładki i przesunięcie palcem ---------- */
+
+const KOLEJNOSC_EKRANOW = ['start', 'jedzenie', 'drzewko', 'test', 'historia'];
+
+// kierunek: 1 = następny ekran wjeżdża z prawej, -1 = poprzedni z lewej, 0 = bez animacji (dotknięcie zakładki).
+function przejdzNa(ekran, kierunek = 0) {
+  stan.ekran = ekran;
+  stan.komunikatTestu = '';
+  stan.edycjaPosilku = null;
+  renderuj();
+  window.scrollTo(0, 0);
+  widok.classList.remove('wjazd-z-prawej', 'wjazd-z-lewej');
+  if (kierunek && !ruchOgraniczony()) {
+    void widok.offsetWidth;
+    widok.classList.add(kierunek > 0 ? 'wjazd-z-prawej' : 'wjazd-z-lewej');
+  }
+}
+
+// Przesunięcie musi być wyraźnie poziome i krótkie, żeby przewijanie w pionie nie zmieniało ekranu.
+// W polach tekstowych palec przesuwa kursor, a w otwartym panelu i komunikacie gest należy do nich.
+let dotyk = null;
+document.addEventListener('touchstart', e => {
+  dotyk = null;
+  if (e.touches.length !== 1 || document.querySelector('dialog[open]')) return;
+  if (e.target.closest('input, textarea, select, #toast, [data-popraw-posilek]')) return;
+  dotyk = { x: e.touches[0].clientX, y: e.touches[0].clientY, czas: Date.now() };
+}, { passive: true });
+document.addEventListener('touchcancel', () => { dotyk = null; }, { passive: true });
+document.addEventListener('touchend', e => {
+  if (!dotyk) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - dotyk.x, dy = t.clientY - dotyk.y, czas = Date.now() - dotyk.czas;
+  dotyk = null;
+  if (Math.abs(dx) < 60 || Math.abs(dx) < 2 * Math.abs(dy) || czas > 800) return;
+  const k = dx < 0 ? 1 : -1;
+  const cel = KOLEJNOSC_EKRANOW[KOLEJNOSC_EKRANOW.indexOf(stan.ekran) + k];
+  if (!cel) return;
+  schowajToast();
+  przejdzNa(cel, k);
+}, { passive: true });
+
 /* ---------- Zdarzenia ---------- */
 
 document.addEventListener('click', e => {
@@ -1302,7 +1343,7 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#toast') && !toast.el.hidden && !e.target.closest('.kafelek-zapis, .szybki')) schowajToast();
 
   const zak = e.target.closest('.zakladki button, [data-przejdz]');
-  if (zak) { stan.ekran = zak.dataset.ekran || zak.dataset.przejdz; stan.komunikatTestu = ''; stan.edycjaPosilku = null; renderuj(); window.scrollTo(0, 0); return; }
+  if (zak) { przejdzNa(zak.dataset.ekran || zak.dataset.przejdz); return; }
   const kaf = e.target.closest('.kafelek-zapis');
   if (kaf) { zapiszRuch(kaf.dataset.typ); return; }
   const opc = e.target.closest('.kafelek-opcja');
