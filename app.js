@@ -297,6 +297,7 @@ const stan = {
   szkicTestu: {}, // wpisane, jeszcze niezapisane wartości testu
   szkicPosilku: {}, // to samo dla formularza posiłku
   edycjaPosilku: null, // id posiłku z otwartą poprawką w dzienniku
+  rozwinieteDni: new Set(), // poprzednie dni rozwinięte w dzienniku (początek dnia w ms); przeżywają odświeżenie
   ostatniKlik: null, // { typ, czas }: chroni przed przypadkowym podwójnym dotknięciem tego samego kafelka
   przekazanieEtapu: false // jeden render po zamknięciu etapu: zamknięty segment zwija się, nowy przejmuje miejsce
 };
@@ -812,6 +813,7 @@ function wierszPosilku(p) {
 }
 
 // Dziennik z ostatnich 7 dni. Suma dnia stoi bez porównania z celem: cel dotyczy średniej.
+// Dziś rozwinięte; poprzednie dni to jedna linia z sumą, rozwijana dotknięciem (np. do poprawki).
 function dziennikHtml() {
   const dzis = poczatekDnia(new Date());
   const od = dodajDni(dzis, -6);
@@ -825,7 +827,11 @@ function dziennikHtml() {
   let html = '';
   for (const [t, lista] of grupy) {
     const suma = sumy.get(t) || 0;
-    html += `<section class="dzien"><h2 class="sekcja">${nazwaDnia(t)}${suma ? ` · ${fmt(suma)} kcal` : ''}</h2><div class="karta">${lista.length ? lista.map(wierszPosilku).join('') : '<p class="drobny">Na razie pusto.</p>'}</div></section>`;
+    const naglowek = `<h2 class="sekcja">${nazwaDnia(t)}${suma ? ` · ${fmt(suma)}&nbsp;kcal` : ''}</h2>`;
+    const karta = `<div class="karta">${lista.length ? lista.map(wierszPosilku).join('') : '<p class="drobny">Na razie pusto.</p>'}</div>`;
+    if (t === dzis.getTime()) { html += `<section class="dzien">${naglowek}${karta}</section>`; continue; }
+    const otwarty = stan.rozwinieteDni.has(t) || lista.some(p => p.id === stan.edycjaPosilku);
+    html += `<details class="dzien dzien-zwiniety" data-dzien="${t}"${otwarty ? ' open' : ''}><summary>${naglowek}</summary>${karta}</details>`;
   }
   return `<div id="dziennik">${html}</div>`;
 }
@@ -1378,6 +1384,13 @@ document.addEventListener('click', e => {
     else if (e.target.closest('[data-anuluj-edycje]')) { stan.edycjaPosilku = null; renderuj(); }
   }
 });
+// toggle nie wędruje w górę drzewa, stąd nasłuch w fazie przechwytywania.
+document.addEventListener('toggle', e => {
+  const d = e.target;
+  if (!d.matches || !d.matches('details[data-dzien]')) return;
+  if (d.open) stan.rozwinieteDni.add(Number(d.dataset.dzien));
+  else stan.rozwinieteDni.delete(Number(d.dataset.dzien));
+}, true);
 document.addEventListener('input', e => {
   const posilek = e.target.closest('#formularz-posilku input');
   if (posilek) {
